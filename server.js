@@ -1,8 +1,18 @@
 const Express = require('express')
 const bodyParser = require('body-parser')
 // npm install body-parser
+const Pool = require('pg').Pool
 const app = Express()
 const port = 3000
+
+const db = new Pool({
+  user: 'dncdgalgtcxffu',
+  host: 'ec2-54-83-202-132.compute-1.amazonaws.com',
+  database: 'd14sr9dpf73eu9',
+  password: '3da4eab64bcb8e9f29abeb4b32ca53013db66ec734920e97230e1b67370ef054',
+  port: 5432,
+  ssl: true
+})
 
 let data = [
   {
@@ -19,16 +29,16 @@ let data = [
   }
 ]
 app.use(bodyParser())
-// get semua data
-app.get('/',(req, res)=>{
-  res.json(data)
+// get semua data dengan database
+app.get('/', async(req, res)=>{
+  const resData = await db.query('select * from users')
+  res.json(resData.rows)
 })
-// get dengan spesifik id
-app.get('/:id',(req, res)=>{
+// get dengan spesifik id dengan database
+app.get('/:id',async (req, res)=>{
   const id = req.params.id
-  const obj = data.find(item=>item.id == id)
-  console.log(req.params)
-  res.json(obj)
+  const resData = await db.query(`select * from users where id=${id}`)
+  res.json(resData.rows[0])
 })
 // post menambah data
 app.post('/',(req, res)=>{
