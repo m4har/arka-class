@@ -13,60 +13,72 @@ const db = new Pool({
   port: 5432,
   ssl: true
 })
-
-let data = [
-  {
-    id:1572072895826,
-    nama:'Budi',
-    umur:20,
-    alamat:'Jakarta'
-  },
-  {
-    id:1572072895827,
-    nama:'Bambang',
-    umur:20,
-    alamat:'Jakarta'
-  }
-]
+db.connect()
 app.use(bodyParser())
+
 // get semua data dengan database
 app.get('/', async(req, res)=>{
-  const resData = await db.query('select * from users')
-  res.json(resData.rows)
+  try {
+    const resData = await db.query('select * from users order by id asc')
+    res.json(resData.rows)
+  } catch (error) {
+    // jalan ketika ada error
+    console.log(error)
+    res.status(422).json('error, please check log')
+  }
 })
+
 // get dengan spesifik id dengan database
 app.get('/:id',async (req, res)=>{
-  const id = req.params.id
-  const resData = await db.query(`select * from users where id=${id}`)
-  res.json(resData.rows[0])
-})
-// post menambah data
-app.post('/',(req, res)=>{
-  const {nama, umur, alamat} = req.body
-  const id = Number(new Date)
-  console.log(req.body)
-  data.push({id, nama, umur, alamat})
-  res.json('Data berhasil di tambah')
-})
-// put mengedit data
-app.put('/:id',(req, res)=>{
-  const {nama, umur, alamat} = req.body
-  const id = req.params.id
-  const index = data.findIndex(item=>item.id == id)
-  if(nama === undefined){
-    data[index] = {...data[index], umur, alamat}
-  } else {
-    data[index] = {...data[index],nama, umur, alamat}
+  try {
+    const id = req.params.id
+    const resData = await db.query(`select * from users where id=${id}`)
+    res.json(resData.rows[0])
+  } catch (error) {
+    // jalan ketika ada error
+    console.log(error)
+    res.status(422).json('error, please check log')
   }
-  res.json('data berhasil diubah')
 })
+
+// post menambah data
+app.post('/',async (req, res)=>{
+  try {
+    const {nama, umur, alamat} = req.body
+    await db.query(`insert into users(nama, umur, alamat) values('${nama}',${umur},'${alamat}')`)
+    res.json('Data berhasil di tambah')
+  } catch (error) {
+    // jalan ketika ada error
+    console.log(error)
+    res.status(422).json('error, please check log')
+  }
+})
+
+// put mengedit data
+app.put('/:id', async(req, res)=>{
+  try {
+    const {nama, umur, alamat} = req.body
+    const id = req.params.id
+    await db.query(`update users set nama='${nama}', umur=${umur}, alamat='${alamat}' where id=${id}`)
+    res.json('data berhasil diubah')
+  } catch (error) {
+    // jalan ketika ada error
+    console.log(error)
+    res.status(422).json('error, please check log')
+  }
+})
+
 // delete data
-app.delete('/:id',(req, res)=>{
-  const id = req.params.id
-  const newData = data.filter(item => item.id != id)
-  data = newData
-  console.log(newData)
-  res.json('Data terhapus')
+app.delete('/:id',async(req, res)=>{
+  try {
+    const id = req.params.id
+    await db.query(`delete from users where id=${id}`)
+    res.json('Data terhapus')
+  } catch (error) {
+    // jalan ketika ada error
+    console.log(error)
+    res.status(422).json('error, please check log')
+  }
 })
 
 app.listen(port,()=>console.log('localhost:3000'))
