@@ -1,9 +1,10 @@
 const Express = require('express')
 const bodyParser = require('body-parser')
+const cors = require('cors')
 // npm install body-parser
 const Pool = require('pg').Pool
 const app = Express()
-const port = 3000
+const port = 3001
 
 const db = new Pool({
   user: 'dncdgalgtcxffu',
@@ -15,6 +16,7 @@ const db = new Pool({
 })
 db.connect()
 app.use(bodyParser())
+app.use(cors())
 
 // get semua data dengan database
 app.get('/', async(req, res)=>{
@@ -81,4 +83,4 @@ app.delete('/:id',async(req, res)=>{
   }
 })
 
-app.listen(port,()=>console.log('localhost:3000'))
+app.listen(port,()=>console.log('localhost:3001'))
